@@ -1,0 +1,12 @@
+[project]
+name = "rock-paper-scissors"
+version = "0.1.0"
+description = """Agent Based Modelling of Rock Paper Scissors dynamics with
+genetic algortihms to evolve competition dynamics"""
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.9",
+    "mesa[rec]>=3.5.1",
+    "numpy>=2.4.4",
+]
