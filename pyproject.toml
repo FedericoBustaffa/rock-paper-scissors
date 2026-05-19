@@ -12,3 +12,6 @@ dependencies = [
     "mesa[rec]>=3.5.1",
     "numpy>=2.4.4",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
