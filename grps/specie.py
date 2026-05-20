@@ -1,5 +1,5 @@
 from mesa import Agent
 
 
-class MyAgent(Agent):
+class Specie(Agent):
     pass
