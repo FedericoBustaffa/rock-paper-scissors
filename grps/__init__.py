@@ -1,3 +1,4 @@
-from .specie import Specie
+from .agent import Agent
+from .grid import Grid
 
-__all__ = ["Specie"]
+__all__ = ["Agent", "Grid"]
