@@ -1,4 +1,4 @@
-from .grid import Grid
-from .specie import Specie
+from .rps_agent import RPSAgent
+from .rps_model import RPSModel
 
-__all__ = ["Specie", "Grid"]
+__all__ = ["RPSAgent", "RPSModel"]
