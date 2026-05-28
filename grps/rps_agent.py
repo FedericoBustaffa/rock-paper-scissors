@@ -1,32 +1,51 @@
 import mesa
-import numpy as np
+from mesa.discrete_space import Cell, CellAgent
+
+species = {"rock": 0, "paper": 1, "scissors": 2}
 
 
-def get_prey(specie):
+def get_prey(specie: str) -> str:
     if specie == "rock":
-        return "scissors"
-    if specie == "paper":
-        return "rock"
-    if specie == "scissors":
         return "paper"
+    elif specie == "paper":
+        return "scissors"
+    elif specie == "scissors":
+        return "rock"
+    else:
+        raise ValueError(f"Invalid specie: {specie}")
 
 
-class RPSAgent(mesa.Agent):
+class RPSAgent(CellAgent):
     def __init__(
-        self, model: mesa.Model, cell: Cell, specie: str, invasion: float
+        self,
+        model: mesa.Model,
+        cell: Cell,
+        specie: str,
+        invasion: float,
     ) -> None:
         super().__init__(model)
         self.cell = cell
         self.specie = specie
         self.prey = get_prey(specie)
+
         assert invasion >= 0.0 and invasion <= 1.0  # ensure valid probability
         self.invasion = invasion
 
     def hunt(self) -> None:
-        cellmates = [a for a in self.cell.agents if a is not self]
-        other = self.random.choice(cellmates)
+        assert self.cell is not None
 
-        if other.specie == self.prey:
-            if self.random.uniform(0, 1) <= self.invasion:
-                other.specie = self.specie
-                other.invasion = min(self.invasion + self.random.gauss(0, 0.01), 1)
+        # select a random nearby cell and its agent
+        nearby_cell = self.random.choice(list(self.cell.neighborhood))
+        nearby_agent = nearby_cell.agents[0]
+
+        assert isinstance(nearby_agent, RPSAgent)
+        print(f"I'm a {self.specie} and I'm hunting a {nearby_agent.specie}")
+
+        # if the specie of the nearby agent matches the prey of this agent, kill
+        # the nearby agent
+        if (
+            self.prey == nearby_agent.specie
+            and self.invasion < self.model.random.normal(0, 0.1)
+        ):
+            nearby_agent.remove()
+            self.model.schedule.remove(self)
