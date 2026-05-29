@@ -1,9 +1,15 @@
 import matplotlib.pyplot as plt
 
-from grps import RPSModel
+from grps import Inheritance, RPSModel, Stochastic
 
 if __name__ == "__main__":
-    model = RPSModel(50, 50, rng=42)
+    policies = {
+        "rock": Stochastic(sigma=0.1),
+        "paper": Stochastic(sigma=0.1),
+        "scissors": Stochastic(sigma=0.1),
+    }
+    dim = 25
+    model = RPSModel(width=dim, height=dim, policies=policies, rng=42)
     model.run_for(1000)
 
     model_df = model.datacollector.get_model_vars_dataframe()
@@ -17,6 +23,7 @@ if __name__ == "__main__":
     plt.plot(model_df["S_density"], label="scissors")
 
     plt.grid()
+    plt.legend()
     plt.tight_layout()
     plt.show()
 
@@ -28,6 +35,7 @@ if __name__ == "__main__":
     plt.plot(model_df["S_invasion"], label="scissors")
 
     plt.grid()
+    plt.legend()
     plt.tight_layout()
     plt.show()
 
@@ -39,5 +47,6 @@ if __name__ == "__main__":
     plt.plot(model_df["S_age"], label="scissors")
 
     plt.grid()
+    plt.legend()
     plt.tight_layout()
     plt.show()

@@ -6,6 +6,7 @@ from mesa.discrete_space import OrthogonalMooreGrid
 from mesa.model import RNGLike, SeedLike
 
 from grps import RPSAgent
+from grps.evolution_policies import EvolutionPolicy
 
 
 def population_density(specie: str, model: mesa.Model) -> int:
@@ -31,6 +32,7 @@ class RPSModel(mesa.Model):
         self,
         width: int,
         height: int,
+        policies: dict[str, EvolutionPolicy],
         rng: RNGLike | SeedLike | None = None,
     ) -> None:
         super().__init__(rng=rng)
@@ -40,8 +42,9 @@ class RPSModel(mesa.Model):
         self.epoch_length = n  # same as the paper
 
         # create agents
-        species = ["rock", "paper", "scissors"]
+        species = self.random.choices(["rock", "paper", "scissors"], k=n)
         invasion_probas = [self.random.uniform(0, 1) for _ in range(n)]
+        individual_policies = [policies[s] for s in species]
 
         RPSAgent.create_agents(
             model=self,
@@ -49,6 +52,7 @@ class RPSModel(mesa.Model):
             cell=self.grid.all_cells.cells,
             specie=self.random.choices(species, k=n),
             invasion=invasion_probas,
+            evo_policy=individual_policies,
         )
 
         # data collectors
