@@ -1,44 +1,37 @@
-from abc import ABC, abstractmethod
-
-import mesa
 import numpy as np
-from mesa.agent import Random
+
+from grps import RPSAgent
 
 
-class EvolutionPolicy(ABC):
-    def __init__(self, model: mesa.Model) -> None:
-        self.model = model
-
-    @abstractmethod
-    def __call__(self, invasion: float, rng: Random | None = None) -> float:
+class EvolutionPolicy:
+    def __init__(self) -> None:
         pass
+
+    def __call__(self, agent: RPSAgent) -> float: ...
 
 
 class Inheritance(EvolutionPolicy):
-    def __init__(self, model: mesa.Model) -> None:
-        super().__init__(model)
+    def __init__(self) -> None:
+        super().__init__()
 
-    def __call__(self, invasion: float, rng: Random | None = None) -> float:
-        return invasion
+    def __call__(self, agent: RPSAgent) -> float:
+        return agent.invasion
 
 
 class Stochastic(EvolutionPolicy):
-    def __init__(self, model: mesa.Model, sigma: float = 0.01) -> None:
-        super().__init__(model)
+    def __init__(self, sigma: float = 0.01) -> None:
+        super().__init__()
         self.sigma = sigma
 
-    def __call__(self, invasion: float, rng: Random | None = None) -> float:
-        assert rng is not None
-        offset = rng.gauss(0, self.sigma)
-        return np.clip(invasion + offset, 0, 1)
+    def __call__(self, agent: RPSAgent) -> float:
+        offset = agent.model.random.gauss(0, self.sigma)
+        return np.clip(agent.invasion + offset, 0, 1)
 
 
 class Genetic(EvolutionPolicy):
-    def __init__(self, model: mesa.Model, sigma: float = 0.01) -> None:
-        super().__init__(model)
+    def __init__(self, sigma: float = 0.01) -> None:
+        super().__init__()
         self.sigma = sigma
 
-    def __call__(self, invasion: float, rng: Random | None = None) -> float:
-        assert rng is not None
-        offset = rng.gauss(0, self.sigma)
-        return np.clip(invasion + offset, 0, 1)
+    def __call__(self, agent: RPSAgent) -> float:
+        return agent.invasion

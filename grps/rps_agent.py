@@ -1,8 +1,6 @@
 import mesa
 from mesa.discrete_space import Cell, CellAgent
 
-from grps.evolution_policies import EvolutionPolicy
-
 
 def get_prey(specie: str) -> str:
     if specie == "rock":
@@ -22,7 +20,6 @@ class RPSAgent(CellAgent):
         cell: Cell,
         specie: str,
         invasion: float,
-        evo_policy: EvolutionPolicy,
     ) -> None:
         super().__init__(model)
         self.cell = cell
@@ -32,7 +29,6 @@ class RPSAgent(CellAgent):
 
         assert invasion >= 0.0 and invasion <= 1.0  # ensure valid probability
         self.invasion = invasion
-        self.evo_policy = evo_policy
 
     def hunt(self) -> None:
         assert self.cell is not None
@@ -49,9 +45,9 @@ class RPSAgent(CellAgent):
                 nearby_agent.specie = self.specie
                 nearby_agent.prey = self.prey
                 nearby_agent.age = 0
-                nearby_agent.invasion = self.evo_policy(
-                    self.invasion, self.model.random
-                )
+
+                evo_policy = self.model.policies[self.specie]
+                nearby_agent.invasion = evo_policy(self)
 
     def get_older(self) -> None:
         self.age += 1

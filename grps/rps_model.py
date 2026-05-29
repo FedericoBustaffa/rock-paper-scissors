@@ -30,21 +30,21 @@ def specie_age(specie: str, model: mesa.Model) -> int:
 class RPSModel(mesa.Model):
     def __init__(
         self,
-        width: int,
-        height: int,
+        dim: int,
         policies: dict[str, EvolutionPolicy],
         rng: RNGLike | SeedLike | None = None,
     ) -> None:
         super().__init__(rng=rng)
 
-        n = width * height  # number of individuals induced by grid dimensions
-        self.grid = OrthogonalMooreGrid((width, height), torus=True, random=self.random)
+        n = dim  # number of individuals induced by grid dimensions
+        self.grid = OrthogonalMooreGrid((dim, dim), torus=True, random=self.random)
         self.epoch_length = n  # same as the paper
+
+        self.policies = policies
 
         # create agents
         species = self.random.choices(["rock", "paper", "scissors"], k=n)
         invasion_probas = [self.random.uniform(0, 1) for _ in range(n)]
-        individual_policies = [policies[s] for s in species]
 
         RPSAgent.create_agents(
             model=self,
@@ -52,7 +52,6 @@ class RPSModel(mesa.Model):
             cell=self.grid.all_cells.cells,
             specie=self.random.choices(species, k=n),
             invasion=invasion_probas,
-            evo_policy=individual_policies,
         )
 
         # data collectors
@@ -86,13 +85,11 @@ class RPSModel(mesa.Model):
         ra = specie_age("rock", self)
         pa = specie_age("paper", self)
         sa = specie_age("scissors", self)
-        print(
-            f"""epoch: {self.epoch},\
-R_d: {r}, P_d: {p}, S_d: {s},\
-R_i: {ri:.2f}, P_i: {pi:.2f}, S_i: {si:.2f},\
-R_a: {ra}, P_a: {pa}, S_a: {sa}
-            """
-        )
+
+        print(f"epoch: {self.epoch}", end=", ")
+        print(f" R_d: {r}, P_d: {p}, S_d: {s}", end=", ")
+        print(f"R_i: {ri:.2f}, P_i: {pi:.2f}, S_i: {si:.2f}", end=", ")
+        print(f"R_a: {ra}, P_a: {pa}, S_a: {sa}")
         self.epoch += 1
 
         for _ in range(self.epoch_length):
