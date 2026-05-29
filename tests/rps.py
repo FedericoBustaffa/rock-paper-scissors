@@ -1,79 +1,82 @@
+"""Example script: run the RPS model and plot results."""
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import ListedColormap
 
-from grps import Genetic, Inheritance, RPSModel
+from grps import Genetic, Inheritance, RPSModel, Stochastic
 
 if __name__ == "__main__":
+    radius = 25
     policies = {
-        "rock": Inheritance(),
-        "paper": Inheritance(),
-        "scissors": Genetic(sigma=0.01),
+        "rock": Genetic(sigma=0.01, radius=radius),
+        "paper": Genetic(sigma=0.01, radius=radius),
+        "scissors": Genetic(sigma=0.01, radius=radius),
     }
-    model = RPSModel(dim=25, policies=policies, rng=9951)
+    model = RPSModel(dim=50, policies=policies, rng=0)
 
-    n_epochs = 200
+    n_epochs = 500
     model.run_for(n_epochs)
 
-    model_df = model.datacollector.get_model_vars_dataframe()
-    print(model_df)
+    df = model.datacollector.get_model_vars_dataframe()
+    print(df)
 
-    # plot population density
-    plt.figure(dpi=200)
+    # Population density
+    plt.figure(dpi=150)
     plt.title("Population Density")
-
-    plt.plot(model_df["R_density"], c="red", label="rock")
-    plt.plot(model_df["P_density"], c="blue", label="paper")
-    plt.plot(model_df["S_density"], c="green", label="scissors")
-
-    plt.grid()
+    plt.plot(df["R_density"], c="red", label="rock")
+    plt.plot(df["P_density"], c="blue", label="paper")
+    plt.plot(df["S_density"], c="green", label="scissors")
+    plt.xlabel("Epoch")
+    plt.ylabel("Count")
+    plt.grid(alpha=0.3)
     plt.legend()
     plt.tight_layout()
+    plt.savefig("population_density.png")
     plt.show()
 
-    # plot invasion rate
-    plt.figure(dpi=200)
+    # Average invasion rate
+    plt.figure(dpi=150)
     plt.title("Average Invasion Rate")
-
-    plt.plot(model_df["R_invasion"], c="red", label="rock")
-    plt.plot(model_df["P_invasion"], c="blue", label="paper")
-    plt.plot(model_df["S_invasion"], c="green", label="scissors")
-    plt.plot([0, n_epochs], [1.0, 1.0], "r--", label="maximal invasion")
-
-    plt.grid()
+    plt.plot(df["R_invasion"], c="red", label="rock")
+    plt.plot(df["P_invasion"], c="blue", label="paper")
+    plt.plot(df["S_invasion"], c="green", label="scissors")
+    plt.axhline(1.0, ls="--", c="gray", label="max invasion")
+    plt.xlabel("Epoch")
+    plt.ylabel("Mean invasion probability")
+    plt.grid(alpha=0.3)
     plt.legend()
     plt.tight_layout()
+    plt.savefig("invasion_rate.png")
     plt.show()
 
-    # plot average age
-    plt.figure(dpi=200)
+    # Average age
+    plt.figure(dpi=150)
     plt.title("Average Age")
-
-    plt.plot(model_df["R_age"], c="red", label="rock")
-    plt.plot(model_df["P_age"], c="blue", label="paper")
-    plt.plot(model_df["S_age"], c="green", label="scissors")
-
-    plt.grid()
+    plt.plot(df["R_age"], c="red", label="rock")
+    plt.plot(df["P_age"], c="blue", label="paper")
+    plt.plot(df["S_age"], c="green", label="scissors")
+    plt.xlabel("Epoch")
+    plt.ylabel("Mean age (epochs)")
+    plt.grid(alpha=0.3)
     plt.legend()
     plt.tight_layout()
+    plt.savefig("average_age.png")
     plt.show()
 
-    # plot the grid
-    grid = np.full((model.grid.width, model.grid.height), -1)
-    color_map = {
-        "rock": 0,
-        "paper": 1,
-        "scissors": 2,
-    }
+    # Final grid state
+    color_map = {"rock": 0, "paper": 1, "scissors": 2}
+    grid_arr = np.full((model.grid.width, model.grid.height), -1)
+    for agent in model.agents:
+        x, y = agent.cell.coordinate
+        grid_arr[x, y] = color_map[agent.specie]
 
-    for agent in model.agents:  # oppure model.schedule.agents
-        x, y = agent.cell.coordinate  # dipende dalla tua implementazione
-        grid[x, y] = color_map[agent.specie]
-
-    plt.figure(dpi=200)
+    plt.figure(dpi=150)
     plt.title("Final Grid State")
     cmap = ListedColormap(["red", "blue", "green"])
-    plt.imshow(grid, cmap=cmap, interpolation="nearest")
-    plt.colorbar(ticks=[0, 1, 2], label="species")
+    im = plt.imshow(grid_arr.T, cmap=cmap, interpolation="nearest", origin="lower")
+    cbar = plt.colorbar(im, ticks=[0, 1, 2])
+    cbar.ax.set_yticklabels(["rock", "paper", "scissors"])
     plt.tight_layout()
+    plt.savefig("final_grid.png")
     plt.show()
