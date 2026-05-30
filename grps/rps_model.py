@@ -5,12 +5,13 @@ import numpy as np
 from mesa.discrete_space import OrthogonalMooreGrid
 from mesa.model import RNGLike, SeedLike
 
-from grps.rps_agent import RPSAgent
 from grps.evolution_policies import EvolutionPolicy
+from grps.rps_agent import RPSAgent
 
 # ---------------------------------------------------------------------------
 # Data-collector reporter functions
 # ---------------------------------------------------------------------------
+
 
 def population_density(specie: str, model: mesa.Model) -> int:
     """Number of living agents of the given species."""
@@ -23,6 +24,7 @@ def specie_invasion(specie: str, model: mesa.Model) -> float:
     if len(agents) == 0:
         return 0.0
     avg = agents.agg("invasion", np.mean)
+    assert isinstance(avg, float)
     return float(avg)
 
 
@@ -32,12 +34,14 @@ def specie_age(specie: str, model: mesa.Model) -> float:
     if len(agents) == 0:
         return 0.0
     avg = agents.agg("age", np.mean)
+    assert isinstance(avg, float)
     return float(avg)
 
 
 # ---------------------------------------------------------------------------
 # Model
 # ---------------------------------------------------------------------------
+
 
 class RPSModel(mesa.Model):
     """Spatial Rock-Paper-Scissors model on a toroidal Moore-neighbourhood grid.
@@ -88,15 +92,15 @@ class RPSModel(mesa.Model):
         # Data collectors
         # ------------------------------------------------------------------
         model_reporters = {
-            "R_density":  partial(population_density, "rock"),
-            "P_density":  partial(population_density, "paper"),
-            "S_density":  partial(population_density, "scissors"),
+            "R_density": partial(population_density, "rock"),
+            "P_density": partial(population_density, "paper"),
+            "S_density": partial(population_density, "scissors"),
             "R_invasion": partial(specie_invasion, "rock"),
             "P_invasion": partial(specie_invasion, "paper"),
             "S_invasion": partial(specie_invasion, "scissors"),
-            "R_age":      partial(specie_age, "rock"),
-            "P_age":      partial(specie_age, "paper"),
-            "S_age":      partial(specie_age, "scissors"),
+            "R_age": partial(specie_age, "rock"),
+            "P_age": partial(specie_age, "paper"),
+            "S_age": partial(specie_age, "scissors"),
         }
         self.datacollector = mesa.DataCollector(model_reporters=model_reporters)
 
@@ -123,9 +127,10 @@ class RPSModel(mesa.Model):
         # Every agent ages by 1 at the end of the epoch
         self.agents.do("get_older")
 
-    def run_for(self, n_epochs: int) -> None:
+    def run_for(self, duration: float | int) -> None:
         """Run the model for *n_epochs* epochs."""
-        for _ in range(n_epochs):
+        assert isinstance(duration, int)
+        for _ in range(duration):
             self.step()
 
     # ------------------------------------------------------------------

@@ -108,6 +108,7 @@ class Genetic(EvolutionPolicy):
             RPSAgent as _RPSAgent,
         )  # avoid circular at module level
 
+        assert agent.cell is not None
         ax, ay = agent.cell.coordinate
         grid = agent.model.grid
         w, h = grid.width, grid.height

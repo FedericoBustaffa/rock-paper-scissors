@@ -4,18 +4,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import ListedColormap
 
-from grps import Genetic, Inheritance, RPSModel, Stochastic
+from grps import EvolutionPolicy, Genetic, RPSModel
+from grps.evolution_policies import Stochastic
 
 if __name__ == "__main__":
     radius = 25
-    policies = {
+    policies: dict[str, EvolutionPolicy] = {
         "rock": Genetic(sigma=0.01, radius=radius),
-        "paper": Genetic(sigma=0.01, radius=radius),
-        "scissors": Genetic(sigma=0.01, radius=radius),
+        "paper": Stochastic(sigma=0.01),
+        "scissors": Stochastic(sigma=0.01),
     }
-    model = RPSModel(dim=50, policies=policies, rng=0)
+    model = RPSModel(dim=50, policies=policies, rng=42)
 
-    n_epochs = 500
+    n_epochs = 100
     model.run_for(n_epochs)
 
     df = model.datacollector.get_model_vars_dataframe()
