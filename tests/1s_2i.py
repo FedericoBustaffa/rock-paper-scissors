@@ -1,24 +1,39 @@
+import argparse
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import ListedColormap
 
-from grps import EvolutionPolicy, Genetic, RPSModel
+from grps import EvolutionPolicy, Inheritance, RPSModel, Stochastic
 from grps.evolution_policies import Stochastic
 
 if __name__ == "__main__":
-    radius = 25
+    # CLI arguments parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument("dim", type=int, help="square grid side dimension")
+    parser.add_argument(
+        "sigma",
+        type=float,
+        help="standard deviation of the gaussian producing mutations",
+    )
+    parser.add_argument("epochs", type=int, help="simulation number of epochs")
+    parser.add_argument("seed", type=int, help="random seed for reproducibility")
+    args = parser.parse_args()
+
     policies: dict[str, EvolutionPolicy] = {
-        "rock": Genetic(sigma=0.01, radius=radius),
-        "paper": Stochastic(sigma=0.01),
-        "scissors": Stochastic(sigma=0.01),
+        "rock": Inheritance(),
+        "paper": Inheritance(),
+        "scissors": Stochastic(sigma=args.sigma),
     }
-    model = RPSModel(dim=50, policies=policies, rng=42)
+    model = RPSModel(
+        dim=args.dim,
+        initial_invasions=[0.1, 0.1, 0.1],
+        policies=policies,
+        rng=args.seed,
+    )
 
-    n_epochs = 100
-    model.run_for(n_epochs)
-
+    model.run_for(args.epochs)
     df = model.datacollector.get_model_vars_dataframe()
-    print(df)
 
     # Population density
     plt.figure(dpi=150)

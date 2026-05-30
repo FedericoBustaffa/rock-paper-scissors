@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Sequence
 
 import mesa
 import numpy as np
@@ -63,6 +64,7 @@ class RPSModel(mesa.Model):
         self,
         dim: int,
         policies: dict[str, EvolutionPolicy],
+        initial_invasions: Sequence[float] | None = None,
         rng: "RNGLike | SeedLike | None" = None,
     ) -> None:
         super().__init__(rng=rng)
@@ -78,7 +80,15 @@ class RPSModel(mesa.Model):
         # ------------------------------------------------------------------
         cells = list(self.grid.all_cells)
         species_list = self.random.choices(self.SPECIES, k=n)
-        invasion_list = [self.random.uniform(0.0, 1.0) for _ in range(n)]
+
+        invasion_list: Sequence[float]
+
+        if initial_invasions is None:
+            invasion_list = [self.random.uniform(0.0, 1.0) for _ in range(n)]
+        else:
+            invasion_list = [
+                initial_invasions[self.SPECIES.index(s)] for s in species_list
+            ]
 
         RPSAgent.create_agents(
             model=self,
@@ -111,9 +121,9 @@ class RPSModel(mesa.Model):
     def step(self) -> None:
         """Advance the model by one epoch.
 
-        Each epoch consists of ``epoch_length`` randomly-chosen hunt attempts,
+        Each epoch consists of `epoch_length` randomly-chosen hunt attempts,
         followed by aging all agents by one step.  Data are collected at the
-        *beginning* of each epoch (i.e. before the hunts).
+        beginning of each epoch (i.e. before the hunts).
         """
         self.datacollector.collect(self)
         self._log_epoch()
@@ -128,7 +138,7 @@ class RPSModel(mesa.Model):
         self.agents.do("get_older")
 
     def run_for(self, duration: float | int) -> None:
-        """Run the model for *n_epochs* epochs."""
+        """Run the model for `duration` epochs."""
         assert isinstance(duration, int)
         for _ in range(duration):
             self.step()
